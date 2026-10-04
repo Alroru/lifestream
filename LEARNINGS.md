@@ -44,7 +44,7 @@ Lenguaje y código en inglés; notas en español.
 - Ventaja: el controlador queda fino, la conversión se reutiliza y el servicio se puede probar aislado con mocks.
 
 ## 7. Pruebas
-- `AnimalControllerTest`: `@SpringBootTest` + `@AutoConfigureMockMvc` con 6 tests (página por defecto 20/`totalElements=103`/sin `imageUrl` en lista, `?name=lobo`, `?diet=Carnívoro` → 40, detalle `/4` completo, `/999` → 404, `/count` → 103).
+- `AnimalControllerTest`: `@SpringBootTest` + `@AutoConfigureMockMvc` con 6 tests (página por defecto 20/`totalElements=103`/sin `imageUrl` en lista, `?name=lobo`, `?diet=Carnívoro` → 40, detalle `/1` completo, `/999` → 404, `/count` → 103).
 - Ojo Boot 4: `@AutoConfigureMockMvc` se movió a `org.springframework.boot.webmvc.test.autoconfigure` (artefacto `spring-boot-webmvc-test`, scope test). El import antiguo `boot.test.autoconfigure.web.servlet` ya no existe.
 - Ambas clases de test comparten el mismo contexto Spring (misma configuración), así que `DataInitializer` inserta las 103 fichas una sola vez.
 
@@ -60,7 +60,7 @@ Lenguaje y código en inglés; notas en español.
 - Local en vez de hotlink: fotos en `src/main/resources/static/images/animals/` (~4 MB), servidas en `/images/animals/*.jpg` sin código (convención de Spring Boot para estáticos). `imageUrl` guarda la ruta local.
 - Descarga: nombre de fichero sacado de la URL de Commons → `Special:FilePath/<nombre>?width=800` (miniatura ~800px) → guardado con slug (`mantis-religiosa.jpg`). Sin PIL/ImageMagick en el entorno, así se evita traer originales de varios MB.
 - Origen: Wikimedia Commons vía resúmenes de Wikipedia (`originalimage.source`). Ojo con el `rate limit` (429) al verificar en masa: espaciar peticiones.
-- Estado: 23/103 con imagen (invertebrados). Pendientes: peces, anfibios/reptiles, aves, mamíferos + 3 iniciales.
+- Estado: 103/103 con imagen. Lote 2 (80 fotos): 54 OK a la primera, 26 con 404 porque Wikipedia devuelve algunas "originales" ya como `thumb/.../3840px-<fichero>` y hay que quitar el prefijo de ancho para obtener el nombre real.
 
 ## 10. DTO resumido para listas
 - Dos DTO: `AnimalDTO` (ficha completa, detalle) y `AnimalSummaryDTO` (`id` + `commonName`, lista).
@@ -85,7 +85,7 @@ GET /api/animals?habitat=Sabanas
 GET /api/animals?diet=Carnívoro&conservationStatus=Vulnerable   # combinados (AND)
 GET /api/animals?diet=Carnívoro&size=100          # filtro + todo en una página
 GET /api/animals?sort=scientificName,desc&size=3  # ordenar por otro campo
-GET /api/animals/4                                # detalle completo (único que trae imageUrl)
+GET /api/animals/1                                # detalle completo (único que trae imageUrl)
 GET /api/animals/999                              # -> 404
 GET /api/animals/count                            # total guardado (103), sin colisión con /{id}: Spring prioriza la ruta exacta
 ```

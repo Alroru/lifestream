@@ -25,7 +25,7 @@ class AnimalControllerTest {
                 .andExpect(jsonPath("$.totalElements").value(103))
                 .andExpect(jsonPath("$.content.length()").value(20))
                 .andExpect(jsonPath("$.content[0].id").value(1))
-                .andExpect(jsonPath("$.content[0].commonName").value("Zorro rojo"))
+                .andExpect(jsonPath("$.content[0].commonName").value("Lombriz de tierra común"))
                 .andExpect(jsonPath("$.content[0].imageUrl").doesNotExist());
     }
 
@@ -46,7 +46,7 @@ class AnimalControllerTest {
 
     @Test
     void detailReturnsFullAnimal() throws Exception {
-        mockMvc.perform(get("/api/animals/4"))
+        mockMvc.perform(get("/api/animals/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.commonName").value("Lombriz de tierra común"))
                 .andExpect(jsonPath("$.scientificName").value("Lumbricus terrestris"))

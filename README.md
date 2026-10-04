@@ -22,11 +22,11 @@ Proyecto de aprendizaje: Java + Spring Boot.
 - `controller/AnimalController` — endpoints REST (delega en el servicio).
 - `service/AnimalService` — lógica de aplicación: consulta el repositorio y convierte entidad → DTO.
 - `exception/AnimalNotFoundException` — error 404 cuando no existe el id.
-- `config/DataInitializer` — inserta 103 animales al arrancar (3 iniciales + 100: invertebrados, peces, anfibios/reptiles, aves y mamíferos). Los 23 invertebrados llevan `imageUrl` local (`/images/animals/*.jpg`, ficheros en `src/main/resources/static/`, fotos de Wikimedia Commons); el resto aún `null`.
+- `config/DataInitializer` — inserta 103 animales al arrancar (3 iniciales + 100: invertebrados, peces, anfibios/reptiles, aves y mamíferos), todos con `imageUrl` local (`/images/animals/*.jpg`, ficheros en `src/main/resources/static/`, fotos de Wikimedia Commons).
 
 ## Imágenes
 
-Fotos de animales en `src/main/resources/static/images/animals/` (~4 MB, 23 ficheros). Spring las sirve en `/images/animals/<ficha>.jpg` sin código adicional. Origen: Wikimedia Commons (vía miniaturas `Special:FilePath?width=800`); revisar la licencia de cada archivo si el proyecto se publica.
+Fotos de animales en `src/main/resources/static/images/animals/` (103 ficheros, ~21 MB). Spring las sirve en `/images/animals/<ficha>.jpg` sin código adicional. Origen: Wikimedia Commons (vía miniaturas `Special:FilePath?width=800`); revisar la licencia de cada archivo si el proyecto se publica.
 
 ## Requisitos
 
