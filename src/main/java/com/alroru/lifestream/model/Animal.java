@@ -17,6 +17,7 @@ public class Animal {
     private String diet;
     private String conservationStatus;
     private String description;
+    private String imageUrl;
 
     public Animal() {
     }
@@ -77,13 +78,26 @@ public class Animal {
         this.description = description;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
     public Animal(String commonName, String scientificName, String habitat, String diet, String conservationStatus, String description) {
+        this(commonName, scientificName, habitat, diet, conservationStatus, description, null);
+    }
+
+    public Animal(String commonName, String scientificName, String habitat, String diet, String conservationStatus, String description, String imageUrl) {
         this.commonName = commonName;
         this.scientificName = scientificName;
         this.habitat = habitat;
         this.diet = diet;
         this.conservationStatus = conservationStatus;
         this.description = description;
+        this.imageUrl = imageUrl;
     }
 
 
