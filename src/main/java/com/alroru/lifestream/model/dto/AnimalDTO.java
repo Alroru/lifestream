@@ -1,4 +1,4 @@
-package com.alroru.lifestream.dto;
+package com.alroru.lifestream.model.dto;
 
 public record AnimalDTO(
         Long id,

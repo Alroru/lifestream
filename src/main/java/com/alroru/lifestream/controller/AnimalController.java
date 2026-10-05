@@ -1,7 +1,7 @@
 package com.alroru.lifestream.controller;
 
-import com.alroru.lifestream.dto.AnimalDTO;
-import com.alroru.lifestream.dto.AnimalSummaryDTO;
+import com.alroru.lifestream.model.dto.AnimalDTO;
+import com.alroru.lifestream.repository.AnimalSummaryProjection;
 import com.alroru.lifestream.service.AnimalService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +22,7 @@ public class AnimalController {
     }
 
     @GetMapping("/api/animals")
-    public Page<AnimalSummaryDTO> searchAnimals(@RequestParam(required = false) String name,
+    public Page<AnimalSummaryProjection> searchAnimals(@RequestParam(required = false) String name,
                                          @RequestParam(required = false) String habitat,
                                          @RequestParam(required = false) String diet,
                                          @RequestParam(required = false) String conservationStatus,

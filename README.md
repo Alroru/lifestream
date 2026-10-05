@@ -1,6 +1,6 @@
 # Lifestream
 
-API de consulta del mundo animal con estilo Pokédex pero con animales reales.
+API de consulta del mundo animalEntity con estilo Pokédex pero con animales reales.
 Proyecto de aprendizaje: Java + Spring Boot.
 
 ## Stack
@@ -18,11 +18,11 @@ Proyecto de aprendizaje: Java + Spring Boot.
 - `model/Animal` — entidad JPA (`id`, `commonName`, `scientificName`, `habitat`, `diet`, `conservationStatus`, `description`, `imageUrl` nullable con foto de Wikimedia Commons).
 - `repository/AnimalRepository` — `JpaRepository<Animal, Long>`, sin métodos propios.
 - `dto/AnimalDTO` — `record` inmutable con la ficha completa (detalle).
-- `dto/AnimalSummaryDTO` — `record` con solo `id` + `commonName` (lista).
+- `repository/AnimalSummaryProjection` — interfaz con `getId()` + `getCommonName()` (lista).
 - `controller/AnimalController` — endpoints REST (delega en el servicio).
-- `service/AnimalService` — lógica de aplicación: consulta el repositorio y convierte entidad → DTO.
+- `service/AnimalService` (interfaz) + `service/AnimalServiceImpl` — lógica de aplicación: consulta el repositorio y convierte entidad → DTO.
 - `exception/AnimalNotFoundException` — error 404 cuando no existe el id.
-- `config/DataInitializer` — inserta 103 animales al arrancar (3 iniciales + 100: invertebrados, peces, anfibios/reptiles, aves y mamíferos), todos con `imageUrl` local (`/images/animals/*.jpg`, ficheros en `src/main/resources/static/`, fotos de Wikimedia Commons).
+- `data.sql` — 103 `MERGE INTO` idempotentes al arrancar (invertebrados, peces, anfibios/reptiles, aves y mamíferos), todos con `imageUrl` local (`/images/animals/*.jpg`, ficheros en `src/main/resources/static/`, fotos de Wikimedia Commons).
 
 ## Imágenes
 
@@ -95,7 +95,7 @@ curl http://localhost:8080/api/animals/count   # -> 103
 
 ### `GET /api/animals/{id}`
 
-Detalle de un animal. Si no existe, devuelve `404`.
+Detalle de un animalEntity. Si no existe, devuelve `404`.
 
 ```bash
 curl http://localhost:8080/api/animals/1
@@ -108,9 +108,11 @@ curl -i http://localhost:8080/api/animals/999  # -> 404
 
 - `spring.datasource.url=jdbc:h2:mem:lifestream`
 - `spring.jpa.hibernate.ddl-auto=update`
+- `spring.jpa.defer-datasource-initialization=true` (ejecuta `data.sql` tras crear Hibernate el esquema)
+- `spring.sql.init.mode=always`
 - `spring.jpa.show-sql=true`
 
-Los datos se reinician en cada arranque (H2 en memoria + `DataInitializer`).
+Los datos se reinician en cada arranque (H2 en memoria + `data.sql`).
 
 ## Estado del MVP
 

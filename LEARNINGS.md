@@ -13,13 +13,16 @@ Lenguaje y código en inglés; notas en español.
 ## 2. Spring Boot
 
 - `@SpringBootApplication` arranca el contexto (escaneo de componentes + autoconfiguración).
-- `CommandLineRunner` (`config/DataInitializer`) se ejecuta una vez al arrancar. Patrón: inyección por constructor del repositorio + `saveAll(List.of(...))` para carga masiva.
-- Nota: con H2 en memoria el `run()` se repite en cada arranque; en producción habría que comprobar si ya hay datos.
-- Nota: con H2 en memoria el `run()` se repite en cada arranque; en producción habría que comprobar si ya hay datos.
+- Seed con `data.sql` (`src/main/resources/`): 103 `MERGE INTO animal_entity (...) KEY(id) VALUES (...)` con IDs explícitos 1–103 en orden lógico (invertebrados, peces, anfibios/reptiles, aves y mamíferos).
+- `MERGE INTO ... KEY(id)` es el upsert de H2: reejecutar el seed no duplica (idempotente). Importa porque cada `ApplicationContext` de test reejecuta `data.sql` sobre el mismo H2 en memoria.
+- Config para que el SQL corra tras crear Hibernate el esquema: `spring.jpa.defer-datasource-initialization=true` + `spring.sql.init.mode=always`.
+- Ventaja frente al `CommandLineRunner` anterior: seed declarativo (SQL visible en review, editable sin compilar) y sin lógica de carga en el código.
 
 ## 3. Spring Data JPA + H2
 
-- `@Entity` + `@Id` + `@GeneratedValue(IDENTITY)` = tabla con clave autogenerada.
+- `@Entity` + `@Table(name = "animal_entity")` = tabla con nombre fijo (no depende de la estrategia de nombrado).
+- `@Id` + `@GeneratedValue(IDENTITY)` = clave autogenerada por la BD.
+- `@Column(name = "...", nullable = ..., length = ...)` por campo: fija el nombre snake_case (`common_name`, `scientific_name`, ...), la obligatoriedad (`nullable = false` en todo salvo `image_url`) y el tamaño (`length`: 100 nombres/hábitat, 50 dieta/estado, 500 descripción, 255 URL). Sin esto Hibernate lo infiere, pero explícito protege el esquema y documenta el dominio.
 - `interface AnimalRepository extends JpaRepository<Animal, Long>` da gratis `findAll()`, `findById()`, `save()` sin implementar nada.
 - `findById()` devuelve `Optional<Animal>`: obliga a decidir qué pasa si no existe (ver punto 5).
 - Config: `jdbc:h2:mem:lifestream`, `ddl-auto=update`, `show-sql=true`.
@@ -39,36 +42,36 @@ Lenguaje y código en inglés; notas en español.
 
 ## 6. Capa de servicio
 
-- `@Service` marca lógica de aplicación (entre controlador y repositorio).
+- `@Service` en `AnimalServiceImpl` marca lógica de aplicación (entre controlador y repositorio); el controlador depende de la interfaz `AnimalService`.
 - El controlador solo gestiona HTTP (`@GetMapping`, `ResponseEntity`); el servicio consulta con `AnimalRepository` y mapea entidad → `AnimalDTO` con `toDTO`.
-- Ventaja: el controlador queda fino, la conversión se reutiliza y el servicio se puede probar aislado con mocks.
+- Ventaja: el controlador queda fino, la conversión se reutiliza y el servicio se puede probar aislado con mocks (se mockea la interfaz).
 
 ## 7. Pruebas
-- `AnimalControllerTest`: `@SpringBootTest` + `@AutoConfigureMockMvc` con 6 tests (página por defecto 20/`totalElements=103`/sin `imageUrl` en lista, `?name=lobo`, `?diet=Carnívoro` → 40, detalle `/1` completo, `/999` → 404, `/count` → 103).
+- `AnimalEntityControllerTest`: `@SpringBootTest` + `@AutoConfigureMockMvc` con 6 tests (página por defecto 20/`totalElements=103`/sin `imageUrl` en lista, `?name=lobo`, `?diet=Carnívoro` → 40, detalle `/1` completo, `/999` → 404, `/count` → 103).
 - Ojo Boot 4: `@AutoConfigureMockMvc` se movió a `org.springframework.boot.webmvc.test.autoconfigure` (artefacto `spring-boot-webmvc-test`, scope test). El import antiguo `boot.test.autoconfigure.web.servlet` ya no existe.
-- Ambas clases de test comparten el mismo contexto Spring (misma configuración), así que `DataInitializer` inserta las 103 fichas una sola vez.
+- Cada clase de test levanta su propio `ApplicationContext`, y cada uno reejecuta `data.sql` sobre el mismo H2 en memoria; como el seed usa `MERGE INTO ... KEY(id)`, el total sigue en 103.
 
 ## 8. Búsqueda y filtros
 - `@RequestParam(required = false)` en el controlador para filtros opcionales (`name`, `habitat`, `diet`, `conservationStatus`).
-- `@Query` con JPQL en el repositorio: un solo método `search(...)` con condiciones `(:param IS NULL OR ...)` para filtros combinables sin explosión de métodos derivados. Usa **proyección con expresión constructora** (`SELECT new ...AnimalSummaryDTO(a.id, a.commonName)`): la BD devuelve solo 2 columnas, sin hidratar entidades.
+- `@Query` con JPQL en el repositorio: un solo método `search(...)` con condiciones `(:param IS NULL OR ...)` para filtros combinables sin explosión de métodos derivados. Usa **proyección por interfaz** (`SELECT a.id AS id, a.commonName AS commonName` → `AnimalSummaryProjection` con `getId()`/`getCommonName()`): la BD devuelve solo 2 columnas, sin hidratar entidades y sin clase DTO que instanciar.
 - `name` usa `LIKE %...%` insensible a mayúsculas sobre `commonName` y `scientificName`; el resto usa igualdad insensible a mayúsculas.
 - El servicio normaliza `null`/vacío (`isBlank → null`) para que `?diet=` equivalga a no filtrar.
 
 ## 9. Imágenes (`imageUrl`)
-- Campo `String` nullable en `Animal` y `AnimalDTO`: con `ddl-auto=update` Hibernate añade la columna sin migraciones.
+- Campo `String` nullable en `AnimalEntity` y `AnimalDTO`: con `ddl-auto=update` Hibernate añade la columna sin migraciones.
 - Constructor de 6 campos conservado (delega con `imageUrl=null`) + constructor de 7 campos para las fichas con foto.
 - Local en vez de hotlink: fotos en `src/main/resources/static/images/animals/` (~4 MB), servidas en `/images/animals/*.jpg` sin código (convención de Spring Boot para estáticos). `imageUrl` guarda la ruta local.
 - Descarga: nombre de fichero sacado de la URL de Commons → `Special:FilePath/<nombre>?width=800` (miniatura ~800px) → guardado con slug (`mantis-religiosa.jpg`). Sin PIL/ImageMagick en el entorno, así se evita traer originales de varios MB.
 - Origen: Wikimedia Commons vía resúmenes de Wikipedia (`originalimage.source`). Ojo con el `rate limit` (429) al verificar en masa: espaciar peticiones.
 - Estado: 103/103 con imagen. Lote 2 (80 fotos): 54 OK a la primera, 26 con 404 porque Wikipedia devuelve algunas "originales" ya como `thumb/.../3840px-<fichero>` y hay que quitar el prefijo de ancho para obtener el nombre real.
 
-## 10. DTO resumido para listas
-- Dos DTO: `AnimalDTO` (ficha completa, detalle) y `AnimalSummaryDTO` (`id` + `commonName`, lista).
+## 10. Proyección para listas
+- Detalle: `AnimalDTO` (`record` con ficha completa); lista: `AnimalSummaryProjection` (interfaz con `getId()` + `getCommonName()`).
 - El servicio devuelve el resultado del repositorio tal cual en `searchAnimals` (ya viene proyectado); mapea con `toDTO` solo en `getAnimalById`; el repositorio devuelve entidades únicamente en el detalle (`findById`).
 - Efecto medido: `GET /api/animals` pasa de ~60 KB a ~4 KB para 103 fichas, y la lista ni conoce las `imageUrl`, así que ninguna vista puede disparar descargas de fotos desde el listado.
 
 ## 11. Paginación
-- Repositorio: `search(...)` recibe `Pageable` y devuelve `Page<AnimalSummaryDTO>`. Con `@Query` de proyección hay que dar `countQuery` explícito (Spring no lo deriva de un `SELECT new`).
+- Repositorio: `search(...)` recibe `Pageable` y devuelve `Page<AnimalSummaryProjection>`. Con `@Query` de proyección hay que dar `countQuery` explícito (Spring no lo deriva de un `SELECT` parcial).
 - Servicio: propaga el `Pageable`; el controlador lo recibe con `@PageableDefault(size = 20, sort = "id")` (`?page=` 0-based, `?size=`, `?sort=`).
 - Respuesta JSON en Spring Boot 4: formato plano (`content`, `totalElements`, `totalPages`, `size`, `number`, `first`, `last`), sin envoltorio `page`.
 - Medido: 103 fichas → 6 páginas de 20; `?diet=Carnívoro` → 40 resultados paginables.

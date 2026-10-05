@@ -1,4 +1,4 @@
-package com.alroru.lifestream.exception;
+package com.alroru.lifestream.model.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class AnimalNotFoundException extends RuntimeException {
 
     public AnimalNotFoundException(Long id) {
-        super("Any animal found with id: " + id);
+        super("No animal found with id: " + id);
     }
 }
