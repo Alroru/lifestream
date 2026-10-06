@@ -5,6 +5,8 @@ import com.alroru.lifestream.repository.AnimalSummaryProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface AnimalService {
 
     Page<AnimalSummaryProjection> searchAnimals(String name, String habitat, String diet, String conservationStatus, Pageable pageable);
@@ -12,4 +14,10 @@ public interface AnimalService {
     AnimalDTO getAnimalById(Long id);
 
     long countAnimals();
+
+    List<String> getHabitats();
+
+    List<String> getDiets();
+
+    List<String> getConservationStatuses();
 }

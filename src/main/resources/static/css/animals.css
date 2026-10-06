@@ -1,0 +1,105 @@
+:root {
+    --red: #cc3d3d;
+    --darkred: #8f2626;
+    --cream: #f6f1e5;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --accent: #2e7d6f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--ink);
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background: var(--red);
+    color: white;
+    padding: 1rem 2rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+header h1 { margin: 0; font-size: 1.6rem; letter-spacing: 1px; }
+
+.container { max-width: 1000px; margin: 0 auto; padding: 1rem 2rem 2rem; }
+
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.filters input, .filters select {
+    padding: 0.4rem 0.6rem;
+    border: 1px solid #c9c2b2;
+    border-radius: 6px;
+    background: white;
+}
+
+.filters button, .filters a {
+    padding: 0.4rem 0.9rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.filters button { background: var(--red); color: white; }
+.filters a { background: #e4ddcb; color: var(--ink); }
+
+.count { color: #6b6555; }
+
+main { display: grid; grid-template-columns: 1fr 1.2fr; gap: 1rem; align-items: start; }
+
+ul.animal-list { list-style: none; padding: 0; margin: 0; }
+
+ul.animal-list button {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 0.4rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #ddd5c2;
+    border-radius: 8px;
+    background: var(--card);
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+ul.animal-list button:hover { border-color: var(--red); }
+
+ul.animal-list button.selected {
+    background: var(--red);
+    color: white;
+    border-color: var(--darkred);
+    font-weight: bold;
+}
+
+.detail {
+    background: var(--card);
+    border: 1px solid #ddd5c2;
+    border-radius: 10px;
+    padding: 1rem 1.2rem;
+    position: sticky;
+    top: 1rem;
+}
+
+.detail img { max-width: 100%; border-radius: 8px; }
+
+.detail table { border-collapse: collapse; margin-top: 0.5rem; }
+.detail th, .detail td { text-align: left; padding: 0.25rem 0.75rem 0.25rem 0; vertical-align: top; }
+.detail th { color: var(--accent); white-space: nowrap; }
+.detail .placeholder { color: #8a8474; }
+
+.pagination { margin-top: 1rem; display: flex; gap: 1rem; align-items: center; }
+.pagination a { color: var(--red); font-weight: bold; }
+
+@media (max-width: 700px) {
+    main { grid-template-columns: 1fr; }
+    .detail { position: static; }
+}

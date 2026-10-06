@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
+
 public interface AnimalRepository extends JpaRepository<AnimalEntity, Long> {
 
     @Query(value = """
@@ -32,4 +34,13 @@ public interface AnimalRepository extends JpaRepository<AnimalEntity, Long> {
                                   @Param("diet") String diet,
                                   @Param("status") String status,
                                   Pageable pageable);
+
+    @Query("SELECT DISTINCT a.habitat FROM AnimalEntity a ORDER BY a.habitat")
+    List<String> findDistinctHabitats();
+
+    @Query("SELECT DISTINCT a.diet FROM AnimalEntity a ORDER BY a.diet")
+    List<String> findDistinctDiets();
+
+    @Query("SELECT DISTINCT a.conservationStatus FROM AnimalEntity a ORDER BY a.conservationStatus")
+    List<String> findDistinctConservationStatuses();
 }

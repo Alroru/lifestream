@@ -95,3 +95,17 @@ GET /api/animals/count                            # total guardado (103), sin co
 - `name` es el único parcial (`LIKE %...%`); el resto exige el valor exacto (mayúsculas da igual).
 - Vacío equivale a ausente: `?diet=` no filtra.
 - La lista devuelve `id` + `commonName`; la foto solo sale en el detalle.
+
+## 12. OpenAPI (springdoc)
+- Dependencia `org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.1` (línea 3.x, compatible con Spring Boot 4; la 2.x es para Boot 3).
+- `config/OpenApiConfig` expone un bean `OpenAPI` con `Info` (título, descripción, versión); el resto lo deriva springdoc de las anotaciones y firmas.
+- Controlador anotado con `@Tag` (grupo), `@Operation` (resumen), `@Parameter` (filtros + `id`) y `@ApiResponse` 200/404 en el detalle; `AnimalDTO` con `@Schema` (descripción + ejemplos).
+- Endpoints generados sin código: JSON en `/v3/api-docs`, UI en `/swagger-ui/index.html`.
+- En producción se desactivan con `springdoc.api-docs.enabled=false` y `springdoc.swagger-ui.enabled=false`.
+
+## 13. Vista Thymeleaf (maestro-detalle)
+- Dependencia `spring-boot-starter-thymeleaf`, sin tocar los endpoints JSON.
+- `controller/AnimalViewController` (`@Controller`, no `@RestController`): `GET /` acepta los mismos filtros + `Pageable` que la API, llama al servicio directamente (sin HTTP a sí mismo) y devuelve el nombre de plantilla `"animals"` con la `Page` y los filtros en el `Model`.
+- `templates/animals.html`: buscador por nombre + desplegables de hábitat/dieta/estado (`<select>` con las opciones `DISTINCT` de la BD y `th:selected` para conservar el filtro elegido), links de paginación que conservan filtros (`@{/(page=..., size=..., name=..., ...)}`; Thymeleaf omite los nulos) y panel `#detail` relleno por `fetch('/api/animals/' + id)`.
+- Patrón confirmado: la lista solo necesita la proyección ligera; la ficha completa (con `imageUrl`) viaja solo al seleccionar.
+- Tests: `AnimalViewControllerTest` (4 tests: `/` → 200 HTML con la lista, `/?name=lobo` filtra, desplegables con opciones, dieta seleccionada preservada).

@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class AnimalServiceImpl implements AnimalService {
 
@@ -33,6 +35,21 @@ public class AnimalServiceImpl implements AnimalService {
     @Override
     public long countAnimals() {
         return animalRepository.count();
+    }
+
+    @Override
+    public List<String> getHabitats() {
+        return animalRepository.findDistinctHabitats();
+    }
+
+    @Override
+    public List<String> getDiets() {
+        return animalRepository.findDistinctDiets();
+    }
+
+    @Override
+    public List<String> getConservationStatuses() {
+        return animalRepository.findDistinctConservationStatuses();
     }
 
     private AnimalDTO toDTO(AnimalEntity animalEntity) {

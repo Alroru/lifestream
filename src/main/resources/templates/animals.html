@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lifestream</title>
+    <link rel="stylesheet" th:href="@{/css/animals.css}" href="/css/animals.css">
+</head>
+<body>
+<header>
+    <h1>Lifestream</h1>
+</header>
+
+<div class="container">
+    <form class="filters" method="get" th:action="@{/}">
+        <input type="text" name="name" placeholder="Nombre" th:value="${name}">
+        <select name="habitat">
+            <option value="">Hábitat: todos</option>
+            <option th:each="h : ${habitats}" th:value="${h}" th:text="${h}" th:selected="${h == habitat}">Bosques</option>
+        </select>
+        <select name="diet">
+            <option value="">Dieta: todas</option>
+            <option th:each="d : ${diets}" th:value="${d}" th:text="${d}" th:selected="${d == diet}">Carnívoro</option>
+        </select>
+        <select name="conservationStatus">
+            <option value="">Estado: todos</option>
+            <option th:each="s : ${conservationStatuses}" th:value="${s}" th:text="${s}" th:selected="${s == conservationStatus}">Vulnerable</option>
+        </select>
+        <button type="submit">Filtrar</button>
+        <a th:href="@{/}">Limpiar</a>
+    </form>
+
+    <p class="count" th:text="${page.totalElements} + ' animales'">103 animales</p>
+
+    <main>
+        <ul class="animal-list">
+            <li th:each="animal : ${page.content}">
+                <button type="button"
+                        th:data-id="${animal.id}"
+                        th:text="${animal.id} + ' - ' + ${animal.commonName}"
+                        onclick="showDetail(this.dataset.id, this)">1 - Zorro rojo</button>
+            </li>
+        </ul>
+
+        <section class="detail" id="detail">
+            <p class="placeholder">Selecciona un animal de la lista.</p>
+        </section>
+    </main>
+
+    <div class="pagination">
+        <a th:if="${!page.first}"
+           th:href="@{/(page=${page.number - 1}, size=${page.size}, name=${name}, habitat=${habitat}, diet=${diet}, conservationStatus=${conservationStatus})}">Anterior</a>
+        <span th:text="'Página ' + (${page.number} + 1) + ' de ' + ${page.totalPages}">Página 1 de 6</span>
+        <a th:if="${!page.last}"
+           th:href="@{/(page=${page.number + 1}, size=${page.size}, name=${name}, habitat=${habitat}, diet=${diet}, conservationStatus=${conservationStatus})}">Siguiente</a>
+    </div>
+</div>
+
+<script>
+    async function showDetail(id, button) {
+        document.querySelectorAll('.animal-list button').forEach(b => b.classList.remove('selected'));
+        button.classList.add('selected');
+        const detail = document.getElementById('detail');
+        const res = await fetch('/api/animals/' + id);
+        if (!res.ok) {
+            detail.innerHTML = '<p class="placeholder">Animal no encontrado.</p>';
+            return;
+        }
+        const animal = await res.json();
+        detail.innerHTML =
+            '<h2>' + animal.commonName + '</h2>' +
+            (animal.imageUrl ? '<img src="' + animal.imageUrl + '" alt="' + animal.commonName + '">' : '') +
+            '<table>' +
+            '<tr><th>Nombre científico</th><td><i>' + animal.scientificName + '</i></td></tr>' +
+            '<tr><th>Hábitat</th><td>' + animal.habitat + '</td></tr>' +
+            '<tr><th>Dieta</th><td>' + animal.diet + '</td></tr>' +
+            '<tr><th>Estado</th><td>' + animal.conservationStatus + '</td></tr>' +
+            '</table>' +
+            '<p>' + animal.description + '</p>';
+    }
+</script>
+</body>
+</html>

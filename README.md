@@ -11,6 +11,8 @@ Proyecto de aprendizaje: Java + Spring Boot.
 - Spring Data JPA (persistencia)
 - H2 en memoria (desarrollo)
 - JUnit 5 (pruebas)
+- springdoc-openapi 3.1.1 (OpenAPI + Swagger UI)
+- Thymeleaf (vista servidor del catálogo en `GET /`)
 - Maven (construcción, `./mvnw` incluido)
 
 ## Estructura
@@ -22,6 +24,9 @@ Proyecto de aprendizaje: Java + Spring Boot.
 - `controller/AnimalController` — endpoints REST (delega en el servicio).
 - `service/AnimalService` (interfaz) + `service/AnimalServiceImpl` — lógica de aplicación: consulta el repositorio y convierte entidad → DTO.
 - `exception/AnimalNotFoundException` — error 404 cuando no existe el id.
+- `config/OpenApiConfig` — bean `OpenAPI` con título/descripción/versión (springdoc).
+- `controller/AnimalViewController` — `@Controller` que sirve `GET /`: llama al servicio directamente (sin HTTP) y pone la `Page` + filtros en el modelo.
+- `templates/animals.html` — vista Thymeleaf: buscador por nombre + desplegables de hábitat/dieta/estado (opciones `DISTINCT` de la BD), lista clicable, paginación y panel de detalle que se rellena por `fetch` a `/api/animals/{id}` (+ `static/css/animals.css` con el estilo).
 - `data.sql` — 103 `MERGE INTO` idempotentes al arrancar (invertebrados, peces, anfibios/reptiles, aves y mamíferos), todos con `imageUrl` local (`/images/animals/*.jpg`, ficheros en `src/main/resources/static/`, fotos de Wikimedia Commons).
 
 ## Imágenes
@@ -48,7 +53,20 @@ La API queda en `http://localhost:8080`.
 ./mvnw test
 ```
 
+## Vista web
+
+`GET /` devuelve la página del catálogo (HTML): lista paginada con filtros + panel de detalle. El detalle se carga en el navegador con `fetch` a `/api/animals/{id}`, sin recargar la página.
+
+```bash
+xdg-open http://localhost:8080/
+```
+
 ## Endpoints
+
+Documentación interactiva (con la app en marcha):
+
+- Swagger UI: `http://localhost:8080/swagger-ui/index.html`
+- JSON OpenAPI: `http://localhost:8080/v3/api-docs`
 
 ### `GET /api/animals`
 
